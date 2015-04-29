@@ -4,11 +4,19 @@
             [clojure.pprint :refer [pprint]]))
 
 (deftest simple-test
-  (pprint (g/plot! [[:set :title "Simple Plots" :font ",20"]
-                    [:set :key :left :box]
-                    [:set :samples 50]
-                    [:set :style :data :points]
-                    [:plot (g/range -10 10) (g/list (g/lit "sin(x)")
-                                                    (g/lit "atan(x)")
-                                                    (g/lit "cos(atan(x))"))]]
-                   [])))
+  (g/raw-plot! [[:set :title "simple-test"]
+                [:plot (g/range 0 5)
+                 (g/list ["-" :title "rising" :with :lines]
+                         ["-" :title "falling" :with :impulse])]]
+               [[[0 0]
+                 [1 1]
+                 [2 2]
+                 [3 1]
+                 [4 3]
+                 [5 4]]
+                [[0 5]
+                 [1 4]
+                 [2 3]
+                 [3 2]
+                 [4 1]
+                 [5 0]]]))

@@ -61,7 +61,8 @@
   Asserts that gnuplot exits with 0; if not, throws an ex-info like
   `{:type :gnuplot, :exit 123, :out ..., :err ...}`."
   [commands input]
-  (println (bs/convert input String))
+;  (println "gnuplot data input:")
+;  (println (bs/convert input String))
   (let [results (sh "gnuplot"
                     "-p"
                     "-e"      commands
@@ -74,18 +75,19 @@
 
 (def dataset-separator "\ne\n")
 
-(defn plot!
-  "Takes a sequence of Commands, and invokes gnuplot with them."
+(defn raw-plot!
+  "Writes a plot! Takes a sequence of Commands, and a sequence of datasets,
+  represented as a sequence of points, each of which is a sequence of numbers."
   [commands datasets]
   (run! (->> commands
              (map format)
              (str/join ";\n"))
-        (->> datasets
-             (map (fn ds-format [dataset]
-                    (concat
-                      (->> dataset
-                           (map (fn point-format [point]
-                                  (str/join " " point)))
-                           (interpose "\n"))
-                      (list dataset-separator))))
-             bs/to-input-stream)))
+        (-> (mapcat (fn ds-format [dataset]
+                   (concat
+                     (->> dataset
+                          (map (fn point-format [point]
+                                 (str/join " " point)))
+                          (interpose "\n"))
+                     (c/list dataset-separator)))
+                 datasets)
+            (bs/convert java.io.InputStream))))
