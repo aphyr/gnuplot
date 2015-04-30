@@ -1,6 +1,6 @@
-(defproject gnuplot "0.1.0-SNAPSHOT"
+(defproject gnuplot "0.1.0"
   :description "A Clojure interface to Gnuplot"
-  :url "http://example.com/FIXME"
+  :url "http://github.com/aphyr/gnuplot"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies []
