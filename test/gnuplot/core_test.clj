@@ -20,3 +20,10 @@
                  [3 2]
                  [4 1]
                  [5 0]]]))
+
+(deftest stress-test
+  (g/raw-plot! [[:set :title "stress-test"]
+                [:plot (g/range 0 1) ["-" :title "noise" :with :points]]]
+               (let [n 1e5]
+                 [(->> (range n)
+                       (map (fn [i] [(/ i n) (* i (rand))])))])))

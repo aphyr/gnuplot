@@ -4,7 +4,7 @@
             [clojure.java.shell :refer [sh]]
             [clojure.java.io :as io]
             [clojure.string :as str]
-            [byte-streams :as bs]))
+            [gnuplot.util :as u]))
 
 (defprotocol Command
   "Protocol for formatting things as Gnuplot commands."
@@ -90,4 +90,4 @@
                           (interpose "\n"))
                      (c/list dataset-separator)))
                  datasets)
-            (bs/convert java.io.InputStream))))
+            (u/strings->input-stream))))
