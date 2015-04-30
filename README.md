@@ -33,6 +33,13 @@ a nicer `plot` api later. Just need something simple n flexible for now.
 
 ![Example plot](doc/example.png)
 
+## Performance
+
+Datasets are streamed as sequences directly to gnuplot's stdin, so there's no
+temporary files to worry about. Yep, lazy sequences are streamed lazily. My
+laptop can plot about 10 million points in about a minute, and most of the CPU
+time is spent inside gnuplot in that test, so I'm reasonably happy..
+
 ## License
 
 Copyright © 2015 Kyle Kingsbury
