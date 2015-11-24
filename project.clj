@@ -1,4 +1,4 @@
-(defproject gnuplot "0.1.0"
+(defproject gnuplot "0.1.1"
   :description "A Clojure interface to Gnuplot"
   :url "http://github.com/aphyr/gnuplot"
   :license {:name "Eclipse Public License"
