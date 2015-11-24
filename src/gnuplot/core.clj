@@ -1,5 +1,5 @@
 (ns gnuplot.core
-  (:refer-clojure :exclude [format list range])
+  (:refer-clojure :exclude [format list range run!])
   (:require [clojure.core :as c]
             [clojure.java.shell :refer [sh]]
             [clojure.java.io :as io]
