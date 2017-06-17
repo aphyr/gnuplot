@@ -75,19 +75,39 @@
 
 (def dataset-separator "\ne\n")
 
+
+(defn generate-cmds [ commands]
+  (->> commands
+             (map format)
+             (str/join ";\n"))
+  )
+
+(defn generate-datas [ datasets]
+  (-> (mapcat (fn ds-format [dataset]
+             (concat
+               (->> dataset
+                    (map (fn point-format [point]
+                           (str/join " " point)))
+                    (interpose "\n"))
+               (c/list dataset-separator)))
+           datasets)
+      (u/strings->input-stream))
+  )
+
+
 (defn raw-plot!
   "Writes a plot! Takes a sequence of Commands, and a sequence of datasets,
   represented as a sequence of points, each of which is a sequence of numbers."
-  [commands datasets]
-  (run! (->> commands
-             (map format)
-             (str/join ";\n"))
-        (-> (mapcat (fn ds-format [dataset]
-                   (concat
-                     (->> dataset
-                          (map (fn point-format [point]
-                                 (str/join " " point)))
-                          (interpose "\n"))
-                     (c/list dataset-separator)))
-                 datasets)
-            (u/strings->input-stream))))
+  ([commands datasets]
+    (run!
+        (generate-cmds commands)
+        (generate-datas datasets)
+      ))
+   ([commands datasets x]
+     (let [ cmds (generate-cmds commands)
+            datas (generate-datas datasets)])
+     (if (= x :debug)
+        (println (str "CMD:\n"cmds "\nData:" datas))
+        (run! cmds datas)
+     ))
+)
