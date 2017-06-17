@@ -105,9 +105,9 @@
       ))
    ([commands datasets x]
      (let [ cmds (generate-cmds commands)
-            datas (generate-datas datasets)])
-     (if (= x :debug)
-        (println (str "CMD:\n"cmds "\nData:" datas))
-        (run! cmds datas)
-     ))
+            datas (generate-datas datasets)]
+       (if (= x :debug)
+          (println (str "CMD:\n" cmds "\nData:" datas))
+          (run! cmds datas)
+     )))
 )
