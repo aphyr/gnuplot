@@ -70,7 +70,9 @@
                     :out-enc  "UTF-8")]
     (if (zero? (:exit results))
       results
-      (throw (ex-info (str "Gnuplot error: " (:err results))
+      (throw (ex-info (str "Gnuplot error:\n" (:err results)
+                           "\n\nCommands:\n"
+                           commands)
                       (assoc results :type :gnuplot))))))
 
 (def dataset-separator "\ne\n")
