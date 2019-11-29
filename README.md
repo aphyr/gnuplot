@@ -32,7 +32,7 @@ a nicer `plot` api later. Just need something simple n flexible for now.
                [2 3]
                [3 2]
                [4 1]
-               [5 0]]]))
+               [5 0]]])
 ```
 
 ![Example plot](doc/example.png)
