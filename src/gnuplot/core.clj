@@ -1,6 +1,7 @@
 (ns gnuplot.core
   (:refer-clojure :exclude [format list range run!])
-  (:require [clojure.core :as c]
+  (:require [byte-streams :as bs]
+            [clojure.core :as c]
             [clojure.java.shell :refer [sh]]
             [clojure.java.io :as io]
             [clojure.string :as str]
@@ -53,26 +54,36 @@
   [& elements]
   (List. elements))
 
+(defn take-elide
+  "Like take, but if there are more than n elements, returns n elements,
+  followed by '..."
+  [n coll]
+  (let [coll' (take (inc n) coll)]
+    (if (< n (count coll'))
+      (concat coll '...)
+      coll)))
+
 (defn run!
-  "Opens a new gnuplot process, runs the given command string, and feeds it the
-  given input stream, waits for the process to exit, and returns a map of its
-  `{:exit code, :out string, and :err string}`.
+  "Opens a new gnuplot process and feeds it the given input stream, waits for
+  the process to exit, and returns a map of its `{:exit code, :out string, and
+  :err string}`.
 
   Asserts that gnuplot exits with 0; if not, throws an ex-info like
   `{:type :gnuplot, :exit 123, :out ..., :err ...}`."
-  [commands input]
-;  (println "gnuplot data input:")
-;  (println (bs/convert input String))
+  [input]
+  ;(println "gnuplot data input:")
+  ;(println (bs/convert input String))
   (let [results (sh "gnuplot"
                     "-p"
-                    "-e"      commands
                     :in       input
                     :out-enc  "UTF-8")]
     (if (zero? (:exit results))
-      results
       (throw (ex-info (str "Gnuplot error:\n" (:err results)
-                           "\n\nCommands:\n"
-                           commands)
+                           "\n\nInput:\n"
+                           (->> input
+                                (bs/to-line-seq)
+                                (take-elide 128)
+                                (str/join "\n")))
                       (assoc results :type :gnuplot))))))
 
 (def dataset-separator "\ne\n")
@@ -81,15 +92,31 @@
   "Writes a plot! Takes a sequence of Commands, and a sequence of datasets,
   represented as a sequence of points, each of which is a sequence of numbers."
   [commands datasets]
-  (run! (->> commands
-             (map format)
-             (str/join ";\n"))
-        (-> (mapcat (fn ds-format [dataset]
-                   (concat
-                     (->> dataset
-                          (map (fn point-format [point]
-                                 (str/join " " point)))
-                          (interpose "\n"))
-                     (c/list dataset-separator)))
-                 datasets)
-            (u/strings->input-stream))))
+  (let [commands (->> commands
+                      (map format)
+                      (str/join ";\n"))
+        datasets (mapcat (fn ds-format [dataset]
+                           (concat
+                             (->> dataset
+                                  (map (fn point-format [point]
+                                         (str/join " " point)))
+                                  (interpose "\n"))
+                             (c/list dataset-separator)))
+                         datasets)]
+    (try (run! (u/strings->input-stream (concat [commands ";\n"]
+                                                datasets)))
+         (catch clojure.lang.ExceptionInfo ex
+           (let [e (:data (ex-data ex))]
+             (if (= :gnuplot (:type e))
+               (throw (ex-info (str "Gnuplot error:\n" (:err e)
+                                    "\n\nCommands:\n"
+                                    (->> commands
+                                         (bs/to-line-seq)
+                                         (take-elide 128)
+                                         (str/join "\n"))
+                                    "\n\nDatasets:\n"
+                                    (->> datasets
+                                         (bs/to-line-seq)
+                                         (take-elide 16)
+                                         (str/join "\n")))
+                               e))))))))
